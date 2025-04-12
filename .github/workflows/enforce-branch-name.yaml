@@ -1,0 +1,28 @@
+name: enforce branch name
+
+on:
+  create:
+  push:
+
+jobs:
+  check-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+
+      - name: check branch name
+        run: |
+          BRANCH_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///')
+
+          if [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
+            echo "Skipping branch name check for $BRANCH_NAME"
+            exit 0
+          fi
+
+          if [[ ! "$BRANCH_NAME" =~ ^(feature|bugfix|hotfix|chore|production)\/[A-Za-z0-9_-]+$ ]]; then
+            echo "Error: Invalid branch name. Use the pattern: feature/xxx, bugfix/xxx, hotfix/xxx, chore/xxx, or production/xxx."
+            exit 1
+          fi
+
+          exit 0
